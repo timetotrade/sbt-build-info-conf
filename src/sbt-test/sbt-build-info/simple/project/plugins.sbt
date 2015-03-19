@@ -1,0 +1,1 @@
+addSbtPlugin("com.sensatus" % "sbt-build-info-conf" % sys.props("plugin.version"))

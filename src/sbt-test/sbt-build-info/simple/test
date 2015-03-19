@@ -1,0 +1,3 @@
+# call the sbtBuildInfoConf task
+> compile
+$ exists src/main/resources/reference.conf
