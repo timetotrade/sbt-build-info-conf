@@ -26,17 +26,25 @@ import org.eclipse.jgit.revwalk.RevWalk
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import org.eclipse.jgit.treewalk.CanonicalTreeParser
 import sbt.Keys._
+import sbt.plugins.JvmPlugin
+import scala.reflect.runtime.universe._
 import sbt._
- import scala.reflect.runtime.universe._
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
+/**
+ * Class to add build information into application.conf
+ */
 object SbtBuildInfoConf extends AutoPlugin {
+
+  override def requires: Plugins = JvmPlugin
+
   override def trigger = allRequirements
 
   object autoImport {
-    lazy val buildinfo = TaskKey[Unit]("sbt-build-info-conf", "Add build info to reference.conf")
+    lazy val buildinfo = taskKey[Seq[File]]("Add build info to application.conf")
   }
+
   import com.sensatus.SbtBuildInfoConf.autoImport._
 
   /**
@@ -75,9 +83,8 @@ object SbtBuildInfoConf extends AutoPlugin {
 
   /**
    * Show which files have been modified/deleted e.t.c and not committed
-   * (not including changes made to reference.conf since we write to it)
    */
-  lazy val GitDirtyFiles: Try[Map[String,String]] = {
+  lazy val GitDirtyFiles: Try[Map[String, String]] = {
     Try {
       val builder = new FileRepositoryBuilder
       val repository = builder.readEnvironment.findGitDir.build()
@@ -85,10 +92,13 @@ object SbtBuildInfoConf extends AutoPlugin {
       val git = new Git(repository)
       val diff = git.diff().setOldTree(oldTreeParser).call()
       val l = asScalaIteratorConverter(diff.iterator()).asScala.toList
-      l.filterNot(_.getNewPath.endsWith("reference.conf")).map(d ⇒ d.getOldPath
-        → d .getChangeType.toString).toMap
-    }.recoverWith{
-      case e:IllegalArgumentException ⇒ Failure(new Exception("Git repository not found?"))
+      l.map(d ⇒
+        (
+          if(d.getNewPath != "/dev/null") d.getNewPath
+          else d.getOldPath
+        ) → d.getChangeType.toString).toMap
+    }.recoverWith {
+      case e: IllegalArgumentException ⇒ Failure(new Exception("Git repository not found?"))
     }
   }
 
@@ -96,13 +106,13 @@ object SbtBuildInfoConf extends AutoPlugin {
    * Get the identity of the last person to commit
    */
   lazy val GitIdent: Try[PersonIdent] = {
-    Try{
+    Try {
       val builder = new FileRepositoryBuilder
       val repository = builder.readEnvironment.findGitDir.build()
       val git = new Git(repository)
       git.log().setMaxCount(1).call.iterator().next().getAuthorIdent
-    }.recoverWith{
-      case e:IllegalArgumentException ⇒ Failure(new Exception("Git repository not found?"))
+    }.recoverWith {
+      case e: IllegalArgumentException ⇒ Failure(new Exception("Git repository not found?"))
     }
   }
 
@@ -116,7 +126,7 @@ object SbtBuildInfoConf extends AutoPlugin {
   /**
    * Extract the last commit time from the GitIdent
    */
-  lazy val GitLastCommitTime:Try[String] = {
+  lazy val GitLastCommitTime: Try[String] = {
     GitIdent.map(_.getWhen.toString)
   }
 
@@ -126,7 +136,7 @@ object SbtBuildInfoConf extends AutoPlugin {
 
   lazy val GitBranch: Try[String] = {
     Try {
-    val builder = new FileRepositoryBuilder
+      val builder = new FileRepositoryBuilder
       val repository = builder.readEnvironment.findGitDir.build()
       Option(repository.getBranch).filter(_ != GitCommit).orElse {
         val head = repository.getRef(org.eclipse.jgit.lib.Constants.HEAD)
@@ -134,16 +144,15 @@ object SbtBuildInfoConf extends AutoPlugin {
           ref ⇒ !"HEAD".equals(ref.getName) && ref.getObjectId.equals(head.getObjectId)
         }.map(ref ⇒ shortenRefName(ref.getName))
       }.getOrElse(throw new Exception("Could not get branch"))
-    }.recoverWith{
-      case e:IllegalArgumentException ⇒ Failure(new Exception("Git repository not found?"))
+    }.recoverWith {
+      case e: IllegalArgumentException ⇒ Failure(new Exception("Git repository not found?"))
     }
   }
+
   /**
    * Get hostname
    */
   lazy val Hostname: Try[String] = Try(java.net.InetAddress.getLocalHost.getHostName)
-
-
 
   /**
    * get current time
@@ -152,66 +161,94 @@ object SbtBuildInfoConf extends AutoPlugin {
     Success(new java.util.Date().toString)
   }
 
+  /**
+   * Get current username
+   */
   lazy val Username: Try[String] = Try(System.getProperty("user.name"))
 
-
-
+  /**
+   * Set the project settings
+   */
   override lazy val projectSettings = Seq(
+
     buildinfo := {
-
-      implicit class pimpConf(c:Config) {
-
-        import scala.collection.JavaConversions._
-        def applySettingToConf[T:TypeTag](branch: String, value: Try[T]): Config = {
-          value match {
-            case Success(t:Map[String @unchecked,_]) ⇒
-                c.withValue(organization.value + ".buildinfo." + moduleName.value + branch,
-                  ConfigValueFactory.fromMap(mapAsJavaMap(t)))
-            case Success(t) ⇒
-              c.withValue(organization.value + ".buildinfo." + moduleName.value + branch,
-                ConfigValueFactory.fromAnyRef(t))
-            case Failure(f) ⇒
-              streams.value.log.warn(s"Could not populate $branch. ${f.getMessage}")
-              c
-          }
-        }
-      }
-
-      /*
-       * Get the reference.conf if it exists
-       */
-      val resourceDir = (resourceDirectory in Compile).value
-      if (!resourceDir.exists()) resourceDir.mkdirs()
-      val appConfig = ConfigFactory.parseFile(resourceDir / "reference.conf")
-
-      /*
-       * Set our new values
-       */
-      val conf = appConfig
-        .applySettingToConf(".git.commit.hash",GitCommit)
-        .applySettingToConf(".git.commit.author",GitAuthor)
-        .applySettingToConf(".git.commit.time", GitLastCommitTime)
-        .applySettingToConf(".git.branch", GitBranch)
-        .applySettingToConf(".git.dirtyfiles", GitDirtyFiles)
-        .applySettingToConf(".time",BuildTime)
-        .applySettingToConf(".hostname",Hostname)
-        .applySettingToConf(".username",Username)
-
-      /*
-       *  Write back into our file
-       */
-      val file = new File((resourceDir / "reference.conf").toString)
-      val br = new BufferedWriter(new FileWriter(file))
-      try {
-        br.write(conf.root.render(ConfigRenderOptions.defaults().setOriginComments(false)))
-      } finally {
-        br.close()
-      }
+      generateResource(
+        organization.value,
+        moduleName.value,
+        version.value,
+        sbtVersion.value,
+        (resourceDirectory in Compile).value / "reference.conf",
+        (resourceManaged in Compile).value,
+        (resourceManaged in Compile).value / "gen-reference.conf"
+      )
     },
 
+    /* Add to resourceGenerators to be run on 'package' */
+    resourceGenerators in Compile += buildinfo.taskValue,
+
     /*
-     *  Insert into compile stage (might be better in publish?)
+     * Remove all reference.conf files from mappings to avoid name clash in copyResources
      */
-    compile <<= (compile in Compile) dependsOn buildinfo
+    mappings in(Compile, packageBin) <<= (mappings in(Compile, packageBin)).map(_.filter(!_._1
+      .getName.contains("reference.conf"))),
+
+    /*
+     * Add our newly generated conf file back and rename it
+     */
+    mappings in(Compile, packageBin) <+= (resourceManaged in Compile) map { base =>
+      base / "gen-reference.conf" -> "reference.conf"
+    }
+
   )
+
+
+  def generateResource(org: String, mod: String, modVersion:String, sbtVersion:String, existing:
+  File, base:  File, out: File):
+  Seq[File] = {
+    implicit class pimpConf(c: Config) {
+
+      import scala.collection.JavaConversions._
+
+      def applySettingToConf[T: TypeTag](branch: String, value: Try[T]): Config = {
+        value match {
+          case Success(t: Map[String@unchecked, _]) ⇒
+            c.withValue(org + ".buildinfo." + mod + branch,
+              ConfigValueFactory.fromMap(mapAsJavaMap(t)))
+          case Success(t) ⇒
+            c.withValue(org + ".buildinfo." + mod + branch,
+              ConfigValueFactory.fromAnyRef(t))
+          case Failure(f) ⇒
+            streams.map(_.log.warn(s"Could not populate $branch. ${f.getMessage}"))
+            c
+        }
+      }
+    }
+
+    if (!base.exists()) base.mkdirs()
+    /*
+      * Load the existing reference.conf if it exists
+      */
+    val appConfig = ConfigFactory.parseFile(existing)
+
+    /*
+      * Set our new values
+      */
+    val conf = appConfig
+      .applySettingToConf(".git.commit.hash", GitCommit)
+      .applySettingToConf(".git.commit.author", GitAuthor)
+      .applySettingToConf(".git.commit.time", GitLastCommitTime)
+      .applySettingToConf(".git.branch", GitBranch)
+      .applySettingToConf(".git.dirtyFiles", GitDirtyFiles)
+      .applySettingToConf(".time", BuildTime)
+      .applySettingToConf(".hostname", Hostname)
+      .applySettingToConf(".version", Success(modVersion))
+      .applySettingToConf(".sbtVersion", Success(sbtVersion))
+      .applySettingToConf(".username", Username)
+
+    /*
+      *  Write back into file
+      */
+    IO.write(out, conf.root.render(ConfigRenderOptions.defaults().setOriginComments(false)))
+    Seq(out)
+  }
 }
