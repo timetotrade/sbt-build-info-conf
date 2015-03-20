@@ -28,19 +28,18 @@ over to the packaged jar.
 
 The following values are generated:
 
- value             |description
-___________________|__________________
- username          | The username of the user who built it
- time              | The time the project was built
- hostname          | The hostname of the machine it was built on
- version           | The version of the software
- sbtVersion        | The version of sbt used to build
- git.branch        | The git branch (still works in detached head mode)
- git.commit.author | The git commit author name
- git.commit.hash   | The git commit hash
- git.commit.time   | The git commit time
- git.dirtyFiles    | Which 'dirty' files were in the project and how they have changed (MODIFY, 
- DELETE e.t.c)
+ value            |description
+------------------|----------------------------------------
+username          | The username of the user who built it
+time              | The time the project was built
+hostname          | The hostname of the machine it was built on
+version           | The version of the software
+sbtVersion        | The version of sbt used to build
+git.branch        | The git branch (still works in detached head mode)
+git.commit.author | The git commit author name
+git.commit.hash   | The git commit hash
+git.commit.time   | The git commit time
+git.dirtyFiles    | Which 'dirty' files were in the project and how they have changed (MODIFY, DELETE e.t.c)
 
 ### Example output
 
