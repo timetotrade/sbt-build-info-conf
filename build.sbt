@@ -18,6 +18,7 @@ import scala.xml.{Node => XmlNode, NodeSeq => XmlNodeSeq, _}
 import ReleaseKeys._
 
 lazy val root = (project in file("."))
+  .settings(sonatypeSettings:_*)
   .settings(releaseSettings: _*)
   .settings(publishArtifactsAction := PgpKeys.publishSigned.value)
   .settings(
