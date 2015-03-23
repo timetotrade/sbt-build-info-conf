@@ -19,8 +19,10 @@ like to know the build details of each one.
 It places the information in the path:
 
 ```
-{organisation}.buildinfo.{projectname}
+{organization}.buildinfo.{projectname}
 ```
+
+where organization and projectname are pulled from the existing sbt settings.
 
 It merges any existing reference.conf file found with the new generated details before copying it
 over to the packaged jar.

@@ -133,7 +133,6 @@ object SbtBuildInfoConf extends AutoPlugin {
   /**
    * Get branch information - works if in detached head mode
    */
-
   lazy val GitBranch: Try[String] = {
     Try {
       val builder = new FileRepositoryBuilder
@@ -170,7 +169,6 @@ object SbtBuildInfoConf extends AutoPlugin {
    * Set the project settings
    */
   override lazy val projectSettings = Seq(
-
     buildinfo := {
       generateResource(
         organization.value,
@@ -226,13 +224,13 @@ object SbtBuildInfoConf extends AutoPlugin {
 
     if (!base.exists()) base.mkdirs()
     /*
-      * Load the existing reference.conf if it exists
-      */
+     * Load the existing reference.conf if it exists
+     */
     val appConfig = ConfigFactory.parseFile(existing)
 
     /*
-      * Set our new values
-      */
+     * Set our new values
+     */
     val conf = appConfig
       .applySettingToConf(".git.commit.hash", GitCommit)
       .applySettingToConf(".git.commit.author", GitAuthor)
@@ -246,8 +244,8 @@ object SbtBuildInfoConf extends AutoPlugin {
       .applySettingToConf(".username", Username)
 
     /*
-      *  Write back into file
-      */
+     *  Write back into file
+     */
     IO.write(out, conf.root.render(ConfigRenderOptions.defaults().setOriginComments(false)))
     Seq(out)
   }
