@@ -1,4 +1,4 @@
-# sbt-build-info-config
+# sbt-build-info-config [![Build Status](https://travis-ci.org/Sensatus/sbt-build-info-config.svg?branch=master)](https://travis-ci.org/Sensatus/sbt-build-info-config)
 
 This is a simple [SBT](http://www.scala-sbt.org) [AutoPlugin](http://www.scala-sbt.org/0.13/docs/Plugins.html)
 that uses [jGit](https://eclipse.org/jgit/) and [Typesafe config](https://github.com/typesafehub/config)
