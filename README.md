@@ -1,4 +1,6 @@
-# sbt-build-info-config [![Build Status](https://travis-ci.org/Sensatus/sbt-build-info-config.svg?branch=master)](https://travis-ci.org/Sensatus/sbt-build-info-config)
+# sbt-build-info-conf 
+
+[![Build Status](https://travis-ci.org/Sensatus/sbt-build-info-conf.svg?branch=master)](https://travis-ci.org/Sensatus/sbt-build-info-conf) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.sensatus/sbt-build-info-conf/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.sensatus/sbt-build-info-conf)
 
 This is a simple [SBT](http://www.scala-sbt.org) [AutoPlugin](http://www.scala-sbt.org/0.13/docs/Plugins.html)
 that uses [jGit](https://eclipse.org/jgit/) and [Typesafe config](https://github.com/typesafehub/config)
@@ -9,7 +11,7 @@ to magically add some build information into the projects reference.conf at pack
 Add to your project/plugins.sbt
 
 ```scala
-addSbtPlugin("com.sensatus" % "sbt-build-info-config" % "1.0.0")
+addSbtPlugin("com.sensatus" % "sbt-build-info-conf" % "1.0.0")
 ```
 ### Details
 
