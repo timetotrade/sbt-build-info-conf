@@ -1,1 +1,17 @@
-Initial release
+This is the initial release.
+
+sbt-build-info-conf is a plugin which works with [typesafe's config](https://github.com/typesafehub/config) to provide your
+applications with runtime about the build. You might find it useful if you have lots of separate sub projects within a single root project
+and you'd like to know the build details of each one.
+
+It places the information in the path within your projects configuration:
+
+    {organization}.buildinfo.{projectname}    
+
+It merges any existing reference.conf file found with the new generated details before copying it over to the packaged jar.
+ 
+It was inspired by the more configurable [sbt-build-info](https://github.com/sbt/sbt-buildinfo)
+plugin; we needed something that could be included in our projects transparently with no
+configuration needed.
+
+You can find more in the [readme](https://github.com/Sensatus/sbt-build-info-conf#readme).
