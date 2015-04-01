@@ -30,6 +30,7 @@ import sbt.plugins.JvmPlugin
 import scala.reflect.runtime.universe._
 import sbt._
 import scala.collection.JavaConverters._
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -65,6 +66,21 @@ object SbtBuildInfoConf extends AutoPlugin {
     }
     walk.dispose()
     oldTreeParser
+  }
+
+  /**
+   * Get the 'git describe' string
+   */
+  lazy val GitDescribe : Try[String] = {
+    Try {
+      val builder = new FileRepositoryBuilder
+      val repository = builder.readEnvironment.findGitDir.build()
+      Option(Git.wrap(repository).describe().call())
+        .getOrElse(throw new Exception("Error calling describe - no tags?"))
+
+    }.recoverWith{
+      case NonFatal(f) ⇒ Failure(new Exception("Could not call git describe", f))
+    }
   }
 
   /**
@@ -236,6 +252,7 @@ object SbtBuildInfoConf extends AutoPlugin {
       .applySettingToConf(".git.commit.author", GitAuthor)
       .applySettingToConf(".git.commit.time", GitLastCommitTime)
       .applySettingToConf(".git.branch", GitBranch)
+      .applySettingToConf(".git.describe", GitDescribe)
       .applySettingToConf(".git.dirtyFiles", GitDirtyFiles)
       .applySettingToConf(".time", BuildTime)
       .applySettingToConf(".hostname", Hostname)
