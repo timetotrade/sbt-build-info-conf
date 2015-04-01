@@ -77,8 +77,7 @@ object SbtBuildInfoConf extends AutoPlugin {
       val repository = builder.readEnvironment.findGitDir.build()
       Option(Git.wrap(repository).describe().call())
         .getOrElse(throw new Exception("Error calling describe - no tags?"))
-
-    }.recoverWith{
+    }.recoverWith {
       case NonFatal(f) ⇒ Failure(new Exception("Could not call git describe", f))
     }
   }

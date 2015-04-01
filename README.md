@@ -40,6 +40,7 @@ hostname          | The hostname of the machine it was built on
 version           | The version of the software
 sbtVersion        | The version of sbt used to build
 git.branch        | The git branch (still works in detached head mode)
+git.describe      | The git describe string
 git.commit.author | The git commit author name
 git.commit.hash   | The git commit hash
 git.commit.time   | The git commit time
@@ -59,7 +60,8 @@ git.dirtyFiles    | Which 'dirty' files were in the project and how they have ch
                             "author" : "Max Worgan",
                             "hash" : "36ce84ee57f4448a2181295ce3018eeda19549f7",
                             "time" : "Thu Mar 19 14:13:22 GMT 2015"
-                        },
+                        }, 
+                        "describe" : "v1.0.0-3-g7a67e51",
                         "dirtyFiles" : {
                             "README.md" : "DELETE",
                             "build.sbt" : "MODIFY",
