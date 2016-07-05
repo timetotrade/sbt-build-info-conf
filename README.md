@@ -11,7 +11,7 @@ to magically add some build information into the projects reference.conf at pack
 Add to your project/plugins.sbt
 
 ```scala
-addSbtPlugin("com.sensatus" % "sbt-build-info-conf" % "1.0.0")
+addSbtPlugin("com.sensatus" % "sbt-build-info-conf" % "1.1.0")
 ```
 ### Details
 
