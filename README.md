@@ -1,6 +1,6 @@
 # sbt-build-info-conf 
 
-[![Build Status](https://travis-ci.org/Sensatus/sbt-build-info-conf.svg?branch=master)](https://travis-ci.org/Sensatus/sbt-build-info-conf) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.sensatus/sbt-build-info-conf/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.sensatus/sbt-build-info-conf)
+[![Build Status](https://travis-ci.org/timetotrade/sbt-build-info-conf.svg?branch=master)](https://travis-ci.org/Sensatus/sbt-build-info-conf) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.sensatus/sbt-build-info-conf/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.sensatus/sbt-build-info-conf)
 
 This is a simple [SBT](http://www.scala-sbt.org) [AutoPlugin](http://www.scala-sbt.org/0.13/docs/Plugins.html)
 that uses [jGit](https://eclipse.org/jgit/) and [Typesafe config](https://github.com/typesafehub/config)

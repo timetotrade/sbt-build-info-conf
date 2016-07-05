@@ -16,7 +16,6 @@
 
 package com.sensatus
 
-import java.io.{BufferedWriter, FileWriter}
 
 import com.typesafe.config.{Config, ConfigFactory, ConfigRenderOptions, ConfigValueFactory}
 import org.eclipse.jgit.api.Git
@@ -222,18 +221,12 @@ object SbtBuildInfoConf extends AutoPlugin {
 
       import scala.collection.JavaConversions._
 
-      def applySettingToConf[T: TypeTag](branch: String, value: Try[T]): Config = {
-        value match {
-          case Success(t: Map[String@unchecked, _]) ⇒
-            c.withValue(org + ".buildinfo." + mod + branch,
-              ConfigValueFactory.fromMap(mapAsJavaMap(t)))
-          case Success(t) ⇒
-            c.withValue(org + ".buildinfo." + mod + branch,
-              ConfigValueFactory.fromAnyRef(t))
-          case Failure(f) ⇒
-            streams.map(_.log.warn(s"Could not populate $branch. ${f.getMessage}"))
-            c
-        }
+      def applySettingToConf(branch: String, value: Try[String]): Config = value match {
+        case Success(t) ⇒
+          c.withValue(org + ".buildinfo." + mod + branch, ConfigValueFactory.fromAnyRef(t))
+        case Failure(f) ⇒
+          streams.map(_.log.warn(s"Could not populate $branch. ${f.getMessage}"))
+          c
       }
     }
 
@@ -252,17 +245,24 @@ object SbtBuildInfoConf extends AutoPlugin {
       .applySettingToConf(".git.commit.time", GitLastCommitTime)
       .applySettingToConf(".git.branch", GitBranch)
       .applySettingToConf(".git.describe", GitDescribe)
-      .applySettingToConf(".git.dirtyFiles", GitDirtyFiles)
       .applySettingToConf(".time", BuildTime)
       .applySettingToConf(".hostname", Hostname)
       .applySettingToConf(".version", Success(modVersion))
       .applySettingToConf(".sbtVersion", Success(sbtVersion))
       .applySettingToConf(".username", Username)
 
+    val df = GitDirtyFiles.map(t ⇒
+      conf.withValue(
+        org + ".buildinfo." + mod + ".git.dirtyFiles", ConfigValueFactory.fromMap(t.asJava)
+      )
+    ).getOrElse{
+      streams.map(_.log.warn(s"Could not populate .git.dirtyFiles")  )
+      conf
+    }
     /*
      *  Write back into file
      */
-    IO.write(out, conf.root.render(ConfigRenderOptions.defaults().setOriginComments(false)))
+    IO.write(out, df.root.render(ConfigRenderOptions.defaults().setOriginComments(false)))
     Seq(out)
   }
 }
