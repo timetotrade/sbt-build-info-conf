@@ -17,6 +17,8 @@ import scala.xml.transform.{RewriteRule, RuleTransformer}
 import scala.xml.{Node => XmlNode, NodeSeq => XmlNodeSeq, _}
 import ReleaseKeys._
 
+resolvers += Resolver.url("bintray-sbt-plugins", url("http://dl.bintray.com/sbt/sbt-plugin-releases"))(Resolver.ivyStylePatterns)
+
 lazy val root = (project in file("."))
   .settings(sonatypeSettings:_*)
   .settings(releaseSettings: _*)
@@ -30,9 +32,10 @@ lazy val root = (project in file("."))
     startYear := Some(2015),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature"),
     libraryDependencies ++= Seq(
-      "org.eclipse.jgit" % "org.eclipse.jgit.pgm" % "3.7.0.201502260915-r",
+      "com.typesafe.sbt" % "sbt-git" % "0.9.2",
       "com.typesafe" % "config" % "1.2.1"
     ),
+    addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.9.2"),
     // Publishing details:
     scmInfo := Some(
       ScmInfo(
@@ -83,3 +86,5 @@ lazy val root = (project in file("."))
     scriptedRun <<= scriptedRun dependsOn publishLocal,
     scriptedBufferLog := false
   )
+
+
