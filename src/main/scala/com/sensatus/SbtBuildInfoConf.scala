@@ -25,9 +25,9 @@ import org.eclipse.jgit.revwalk.RevWalk
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import org.eclipse.jgit.treewalk.CanonicalTreeParser
 import sbt.Keys._
-import sbt.plugins.JvmPlugin
-import scala.reflect.runtime.universe._
 import sbt._
+import sbt.plugins.JvmPlugin
+
 import scala.collection.JavaConverters._
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
@@ -52,7 +52,7 @@ object SbtBuildInfoConf extends AutoPlugin {
    */
   def prepareTreeParser(repository: Repository, ref: String): CanonicalTreeParser = {
     // from the commit we can build the tree which allows us to construct the TreeParser
-    val head = repository.getRef(ref)
+    val head = repository.exactRef(ref)
     val walk = new RevWalk(repository)
     val commit = walk.parseCommit(head.getObjectId)
     val tree = walk.parseTree(commit.getTree.getId)
@@ -61,7 +61,7 @@ object SbtBuildInfoConf extends AutoPlugin {
     try {
       oldTreeParser.reset(oldReader, tree.getId)
     } finally {
-      oldReader.release()
+      oldReader.close()
     }
     walk.dispose()
     oldTreeParser
@@ -88,7 +88,7 @@ object SbtBuildInfoConf extends AutoPlugin {
     Try {
       val builder = new FileRepositoryBuilder
       val repository = builder.readEnvironment.findGitDir.build()
-      val head = repository.getRef(org.eclipse.jgit.lib.Constants.HEAD)
+      val head = repository.exactRef(org.eclipse.jgit.lib.Constants.HEAD)
       org.eclipse.jgit.lib.ObjectId.toString(head.getObjectId)
     }.recoverWith {
       case e: IllegalArgumentException ⇒ Failure(new Exception("Git repository not found?"))
@@ -152,7 +152,7 @@ object SbtBuildInfoConf extends AutoPlugin {
       val builder = new FileRepositoryBuilder
       val repository = builder.readEnvironment.findGitDir.build()
       Option(repository.getBranch).filter(_ != GitCommit).orElse {
-        val head = repository.getRef(org.eclipse.jgit.lib.Constants.HEAD)
+        val head = repository.exactRef(org.eclipse.jgit.lib.Constants.HEAD)
         repository.getAllRefs.values().iterator().asScala.find {
           ref ⇒ !"HEAD".equals(ref.getName) && ref.getObjectId.equals(head.getObjectId)
         }.map(ref ⇒ shortenRefName(ref.getName))
@@ -218,8 +218,6 @@ object SbtBuildInfoConf extends AutoPlugin {
   File, base:  File, out: File):
   Seq[File] = {
     implicit class pimpConf(c: Config) {
-
-      import scala.collection.JavaConversions._
 
       def applySettingToConf(branch: String, value: Try[String]): Config = value match {
         case Success(t) ⇒
