@@ -1,18 +1,19 @@
 # sbt-build-info-conf 
 
-[![Build Status](https://travis-ci.org/timetotrade/sbt-build-info-conf.svg?branch=master)](https://travis-ci.org/Sensatus/sbt-build-info-conf) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.sensatus/sbt-build-info-conf/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.sensatus/sbt-build-info-conf)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.sensatus/sbt-build-info-conf/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.sensatus/sbt-build-info-conf)
 
 This is a simple [SBT](http://www.scala-sbt.org) [AutoPlugin](http://www.scala-sbt.org/0.13/docs/Plugins.html)
-that uses [jGit](https://eclipse.org/jgit/) and [Typesafe config](https://github.com/typesafehub/config)
+that uses [sbt-git](https://github.com/sbt/sbt-git) and [Lightbend config](https://github.com/lightbend/config)
 to magically add some build information into the projects reference.conf at package time.
 
 ## Usage
 
-Add to your project/plugins.sbt
+For SBT 1.0 or SBT 0.13, add to your project/plugins.sbt
 
 ```scala
-addSbtPlugin("com.sensatus" % "sbt-build-info-conf" % "1.1.0")
+addSbtPlugin("com.sensatus" % "sbt-build-info-conf" % "1.2.0")
 ```
+
 ### Details
 
 You might find it useful if you have lots of separate modules within a single project and you'd 

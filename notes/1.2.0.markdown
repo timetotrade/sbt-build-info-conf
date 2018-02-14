@@ -1,0 +1,4 @@
+SBT 1.x Support and move to SBT-Git
+
+ * Cross support for SBT 1.x and 0.13.x
+ * Moved from jgit to sbt-git to reduce dependency conflicts ([PR #3](https://github.com/timetotrade/sbt-build-info-conf/pull/3))
